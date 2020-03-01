@@ -4,14 +4,22 @@
 
 " TAB			- indent current block of code
 " SPACE			- fold / unfold current func
-" Control + DOWN	- jump to next function (below)
-" Control + UP		- jump to prev function (above)
+" Control + n 		- toggles Lines numbering ON / OFF (see 'nums' variable below)
+" Control + DOWN	- jump to next function
+" Control + UP		- jump to prev function
 " Control + RIGHT	- jump to the end of line
 " Control + LEFT	- jump to the beginning of line
-" ALT + RIGHT		- jump to a keyword definition
-" ALT + LEFT		- jump back from a keyword definition
-" Control + f		- delete all in buffer 'a' and copy current line to there
+" ALT + RIGHT		- jump to a keyword definition (if tag file exists)
+" ALT + LEFT		- jump back from a keyword definition (if tag file exists)
+" Control + f		- delete all in buffer 'a' and copy current line into it
 " Control + y		- add current line to buffer 'a'
+" Control + p		- past all from buffer 'a' into current position
+
+" Is Lines numbering is ON / OFF?
+" 1 - ON by default
+" 0 - OFF by defailt
+let nums = 0
+
 
 " TAB - indent current block of code / function
 nnoremap <TAB> =i}
@@ -34,24 +42,28 @@ nnoremap <C-p> "ap
 map <C-down> ]]
 " Control + UP key - jump to the prev function
 map <C-up> [[
-" Jump to the end of line
-map <C-right> $
-" Jump to the end of line
-map <C-left> ^
+" Control + RIGHT - jump to the end of line
+map <C-right> W
+" Control + LEFT - jump to the beginning of the line
+map <C-left> b
 
-" Control + RIGHT key - jump to keyword definition (tag)
+" Alt + RIGHT key - jump to keyword definition (tag)
 nnoremap <A-right> <C-]>
-" Control + LEFT key - jump back from the keyword (tag)
+" Alt + LEFT key - jump back from the keyword (tag)
 nnoremap <A-left> <C-t>
 
-" SPACE in command - fold / unfold current function 
+" SPACE in command - fold / unfold current function
 set foldmethod=syntax
 set foldlevel=0
 
+" Fold the whole function
 nnoremap <space> zA
-nnoremap <C-z> zM
+" Fold only current block
 nnoremap <C-o> za
+
+" Highligh the search result (also when you use Ctrl + * or Ctrl + #
 set hlsearch
+" Remove highliting of the search results
 nnoremap <F3> :set hlsearch!<CR>
 
 " Save and restore the state of the window
@@ -60,3 +72,32 @@ au BufWinEnter * silent loadview
 
 " Always show at least 3 lines below the cusrsor
 :set scrolloff=3
+:set laststatus=2
+
+" =============== Lines numbereng ON / OFF support ================
+
+" This function toggles Lines numbering ON / OFF
+function! LineNums()
+   if g:nums == 0
+      let g:nums = 1
+      set number
+   else
+      let g:nums = 0
+      set nonumber
+   endif
+endfunction
+
+" Run on start, set Lines numbering ON / OFF accordingly to 'nums' variable
+function! InitLineNums()
+   if g:nums == 1
+      set number
+   else
+      set nonumber
+   endif
+endfunction
+
+" Control + n toggles Lines numbering ON / OFF
+nnoremap <C-n> :call LineNums()<CR>
+
+" Set Lines numbering on / off according to 'nums' variable
+autocmd VimEnter * :call InitLineNums()
