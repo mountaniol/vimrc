@@ -11,9 +11,8 @@
 " Control + LEFT	- jump to the beginning of line
 " ALT + RIGHT		- jump to a keyword definition (if tag file exists)
 " ALT + LEFT		- jump back from a keyword definition (if tag file exists)
-" Control + f		- delete all in buffer 'a' and copy current line into it
-" Control + y		- add current line to buffer 'a'
-" Control + p		- past all from buffer 'a' into current position
+" Control + a		- add line to default buffer ( I mean @" ) without deleting its content
+" Control + f		- clean default buffer @"
 
 " Is Lines numbering is ON / OFF?
 " 1 - ON by default
@@ -24,19 +23,38 @@ let nums = 0
 " TAB - indent current block of code / function
 nnoremap <TAB> =i}
 
-" Sometimes I need copy multiple lines from diff. places of code.
-" The most typical is to change return statuses in diffirent spots
-" to defines, and afterwards declare these defines in the beginning of the file.
-" So it is pretty simple with the next mappings:
+" Sometimes I need to copy multiple lines from different places of code.
+" I want to gather thes  lines and later to paste it where I need it.
+" This function intended to to this:
+" Add line into default buffer 
+function! CopyLineIntoBuf()
+	" Count bumber of lines in @" buffer
+	let lines=len(split(@", '\n'))
 
-" Control + f -- copy a first item to buffer 'a'
-nnoremap <C-f> "ayy
-" Control + y -- copy a next item to buffer 'a'
-nnoremap <C-y> "Ayy
-" And later you just past it where you need it as regulat by 'p', or -
-" Control + p -- paste from buffer 'a'
-nnoremap <C-p> "ap
+	" Insert \n into buffer
+	call setreg('"',"\n", 'A')
+	" Copy current line into fuffer
+	call setreg('"', getline('.') ,'A')
+	
+	" Show how many lines in the buffer
+	if lines == 0
+		echo "Copied first line"
+	else
+		echo "Lines in register:" len(split(@", '\n'))
+	endif
+	return 0
+endfunction
 
+function! CleanDefaultBuffer()
+	call setreg('"', [])
+	echo "Cleaned buffer, you may start Ctrl + a"
+endfunction
+
+" Map Ctr + a to line adding function
+nnoremap <C-a> :call CopyLineIntoBuf()<CR>
+" Clean default buffer @" (need it before Ctrl + a 
+"nnoremap <C-f> :call setreg('"', [])<CR> call echo "Cleaned buffer"
+nnoremap <C-f> :call CleanDefaultBuffer()<CR>
 
 " Control + DOWN key - jump to the next function
 map <C-down> ]]
